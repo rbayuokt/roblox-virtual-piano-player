@@ -52,6 +52,30 @@ t r w
 [ad] t r
 ```
 
+### Rests (new!)
+Use `.` to insert silent time between notes—just like musical rests.
+
+```bash
+- Each `.` = 1 subdivision step of silence.
+- Runs add up: `...` = 3 steps, `......` = 6 steps.
+- Printed as `·` in the console so you can see the timing.
+
+Cheat sheet:
+- With `SUBDIV=4` (sixteenths):  
+  `.` = 1/16, `..` = 1/8, `....` = 1/4, `........` = 1/2, `................` = 1 bar (4/4).
+- With `SUBDIV=2` (eighths):  
+  `.` = 1/8, `..` = 1/4, `....` = 1/2, `........` = 1 bar (4/4).
+
+```
+Examples:
+**SUBDIV=4**
+```bash
+t .. r # 1/8 rest between t and r
+[ad] .... g # 1/4 rest before g
+y ...... [tu] # 3/8 rest, then a chord
+```
+
+
 Information:
 
 ```
