@@ -1,0 +1,66 @@
+TITLE=Yung Kai - Blue (Roblox VP)
+BPM=97
+SUBDIV=4
+START_DELAY=5.0
+CHORD_HOLD=0.75
+
+t r w t r w
+t r w t y u
+[4o] p s g f d
+5 a s d s
+[1o] u i o
+[6a] s
+[4o] p s g f a
+5 h g f
+[1s] s s d d d
+[6f] f f a a a
+4 t p o
+[5p] o u i
+[1o] i u t
+[6t]
+4 p o o t
+[5u] y t y
+[1o] i u i
+[6u] y t
+[4u] o u y t
+[5u] o u u o
+[1p] o u y
+[6t] t y
+[4u] o u p o
+[5y] u y u
+[8t]
+[6t] t
+[4h] s s p p a s
+[5d] o o f d
+[1of] d d s
+[6p] p a s
+[4h] s s p a s
+[5d] o o f d
+[1f] d [Oad] s
+[6p] o u o
+[4p] o i
+[5u] y t
+[1tu] o [Wry] u
+[6et] p o
+[4t] p
+[5o] i u
+[8t] r w [8t] r w
+[6t] r w [6t] y [6u]
+[4o] p s g f d
+5 a s d s
+[1o] u i o
+[6a] s
+[4o] p s g f a
+5 h g f
+[1s] s s d d d
+[6f] f f a a a
+[4o] p s g f d
+5 a s d s
+[1o] u i o
+[6a] s
+[4f] h f s p
+[5a] o a s d
+[1s]
+[6a] s s
+[qa] p [qp] o
+[wp] [wy] u
