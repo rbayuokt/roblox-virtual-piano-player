@@ -3,11 +3,26 @@ import re
 from pathlib import Path
 from typing import List, Tuple, Union
 
-from vp.model import SongSettings, TokenEvent, Event
+from vp.model import SongSettings, TokenEvent, RestEvent, Event
 
 _ALLOWED_EXTS = {".txt", ".vps"}
 _HEADER_KV_RE = re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.+?)\s*$")
 _ALNUM_RE = re.compile(r"[A-Za-z0-9]")
+
+_BRACKET_TRANS = str.maketrans({
+    "［": "[", "【": "[", "〖": "[", "〔": "[", "｛": "[", "〈": "[", "«": "[", "「": "[", "『": "[", "⟦": "[", "⟮": "[",
+    "］": "]", "】": "]", "〗": "]", "〕": "]", "｝": "]", "〉": "]", "»": "]", "」": "]", "』": "]", "⟧": "]", "⟯": "]",
+})
+_ZW_REMOVE = ("\u200b", "\u200c", "\u200d", "\ufeff", "\u2060", "\u180e", "\u00ad")
+_NBSP_TO_SPACE = ("\u00a0", "\u202f", "\u2007")
+
+def _normalize_notation(s: str) -> str:
+    s = s.translate(_BRACKET_TRANS)
+    for ch in _ZW_REMOVE:
+        s = s.replace(ch, "")
+    for ch in _NBSP_TO_SPACE:
+        s = s.replace(ch, " ")
+    return s
 
 def _coerce_settings(key: str, val: str, s: SongSettings) -> None:
     k = key.strip().upper()
@@ -15,6 +30,8 @@ def _coerce_settings(key: str, val: str, s: SongSettings) -> None:
     try:
         if k == "TITLE":
             s.title = v
+        elif k == "AUTHOR":
+            s.author = v
         elif k == "BPM":
             s.bpm = int(v)
         elif k == "SUBDIV":
@@ -51,11 +68,15 @@ def parse_sheet_text(sheet_text: str) -> Tuple[SongSettings, List[Event]]:
             settings = SongSettings()
             body = text
             break
-    notation = body if header_looked_like_kv else body
+
+    notation = _normalize_notation(body if header_looked_like_kv else body)
+
     events: List[Event] = []
     i = 0
     last_was_newline = False
-    while i < len(notation):
+    n = len(notation)
+
+    while i < n:
         c = notation[i]
         if c == '[':
             j = notation.find(']', i + 1)
@@ -69,6 +90,15 @@ def parse_sheet_text(sheet_text: str) -> Tuple[SongSettings, List[Event]]:
                 events.append(TokenEvent(keys=keys, text=f"[{display_inside}]"))
                 last_was_newline = False
             i = j + 1
+        elif c == '.':
+            j = i
+            while j < n and notation[j] == '.':
+                j += 1
+            steps = j - i
+            if steps > 0:
+                events.append(RestEvent(steps=steps, text='.' * steps))
+                last_was_newline = False
+            i = j
         elif c == '\n':
             if not last_was_newline:
                 events.append({"newline": True})

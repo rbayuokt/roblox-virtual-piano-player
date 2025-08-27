@@ -7,6 +7,7 @@ PrintMode = Literal["paired", "current", "cumulative", "both", "off"]
 @dataclass
 class SongSettings:
     title: str = "Untitled VP Sheet"
+    author: str = ""
     bpm: int = 97
     subdiv: int = 4
     start_delay: float = 5.0
@@ -18,10 +19,15 @@ class TokenEvent:
     keys: List[str]
     text: str
 
+@dataclass
+class RestEvent:
+    steps: int
+    text: str
+
 class NewlineEvent(TypedDict):
     newline: bool
 
-Event = Union[TokenEvent, NewlineEvent]
+Event = Union[TokenEvent, RestEvent, NewlineEvent]
 
 DEFAULT_SETTINGS = SongSettings()
 
@@ -32,6 +38,7 @@ __all__ = [
     "PrintMode",
     "SongSettings",
     "TokenEvent",
+    "RestEvent",
     "NewlineEvent",
     "Event",
     "DEFAULT_SETTINGS",

@@ -4,10 +4,12 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from vp import __version__ as VERSION
 from vp.model import (
     SongSettings,
     Event,
     TokenEvent,
+    RestEvent,
     is_newline,
     PrintMode,
 )
@@ -57,17 +59,19 @@ class Player:
         self.console.print(current_text, highlight=False)
         self.console.print(self._join_last_n(line_tokens), highlight=False)
 
-    def preview(self, settings: SongSettings, file_name: str, total_steps: int) -> None:
+    def preview(self, settings: SongSettings, file_name: str, total_steps: int, note_steps: int) -> None:
         table = Table.grid(expand=False)
         table.add_row(f"[bold]{settings.title}[/bold]")
         meta = Table.grid()
+        if settings.author:
+            meta.add_row(f"[b]Author:[/b] {settings.author}")
         meta.add_row(f"[b]File:[/b] {file_name}")
         meta.add_row(f"[b]Tempo:[/b] {settings.bpm} BPM × SUBDIV {settings.subdiv}")
         meta.add_row(f"[b]Start Delay:[/b] {settings.start_delay:.1f}s")
         meta.add_row(f"[b]Chord Hold:[/b] {settings.chord_hold:.2f}")
-        meta.add_row(f"[b]Steps:[/b] {total_steps}")
+        meta.add_row(f"[b]Steps:[/b] {total_steps}  (notes/chords: {note_steps})")
         table.add_row(meta)
-        self.console.print(Panel(table, title="Virtual Piano Player", expand=False))
+        self.console.print(Panel(table, title=f"Virtual Piano Player v{VERSION}", expand=False))
 
     def countdown(self, seconds: float) -> None:
         seconds = max(0.0, float(seconds))
@@ -86,9 +90,15 @@ class Player:
         hold_secs, _ = split_hold_gap(step_secs, settings.chord_hold)
         mode: PrintMode = settings.print_mode or self.default_print_mode
 
-        note_events_count = sum(1 for e in events if isinstance(e, TokenEvent))
+        note_steps = sum(1 for e in events if isinstance(e, TokenEvent))
+        total_steps = sum(
+            (e.steps if isinstance(e, RestEvent) else 1)
+            for e in events
+            if not is_newline(e)
+        )
+
         if file_name:
-            self.preview(settings, file_name, note_events_count)
+            self.preview(settings, file_name, total_steps, note_steps)
 
         clock = BeatClock(step_secs=step_secs, start_delay=settings.start_delay)
         t0 = clock.start_time()
@@ -105,6 +115,18 @@ class Player:
                 self.console.print(self.divider, highlight=False)
                 continue
 
+            if isinstance(e, RestEvent):
+                for _ in range(e.steps):
+                    clock.sleep_until_step(t0, step_index)
+                    token_text = "·"
+                    line_tokens.append(token_text)
+                    global_tokens.append(token_text)
+                    self._print_token(mode, token_text, line_tokens, global_tokens)
+                    step_index += 1
+                    if step_index % 50 == 0:
+                        self.console.print(f"[dim]...played {step_index} / {total_steps}[/dim]")
+                continue
+
             clock.sleep_until_step(t0, step_index)
 
             token_text = e.text
@@ -116,8 +138,9 @@ class Player:
             self.backend.press(e.keys, hold_secs)
 
             step_index += 1
-
             if step_index % 50 == 0:
-                self.console.print(f"[dim]...played {step_index} / {note_events_count}[/dim]")
+                self.console.print(f"[dim]...played {step_index} / {total_steps}[/dim]")
 
+        if step_index != total_steps:
+            self.console.print(f"[dim]...played {step_index} / {total_steps}[/dim]")
         self.console.print("[bold green]Done.[/bold green]")

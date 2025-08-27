@@ -15,6 +15,7 @@ from prompt_toolkit.layout.containers import WindowAlign
 from prompt_toolkit.styles import Style
 from prompt_toolkit.widgets import Button, Dialog, RadioList, Label
 
+from vp import __version__ as VERSION
 from vp.parser import list_sheets, load_sheet
 from vp.player import Player
 from vp.keys.pyautogui_backend import PyAutoGUIBackend
@@ -31,7 +32,7 @@ PICKER_STYLE = Style.from_dict({
     "footer":          "bg:#000000 #888888",
 })
 
-FOOTER_TEXT = "created by: @rbayuokt"
+FOOTER_TEXT = f"created by: @rbayuokt  ·  v{VERSION}"
 
 def _radiolist_with_footer(
     *,
@@ -111,7 +112,7 @@ def pick_sheet(sheets_dir: str, console: Console) -> Path | None:
                 "Add .txt or .vps files with a header like:\n"
                 "TITLE=My Song\nBPM=97\nSUBDIV=4\nSTART_DELAY=5.0\nCHORD_HOLD=0.75\n\n"
                 "t r w ...",
-                title="No Sheets",
+                title=f"No Sheets · v{VERSION}",
                 border_style="red",
                 style="on black",
             )
@@ -130,7 +131,7 @@ def pick_sheet(sheets_dir: str, console: Console) -> Path | None:
     default_value = choices[0][0]
 
     result = _radiolist_with_footer(
-        title="Roblox VP Player",
+        title=f"Roblox VP Player v{VERSION}",
         text="Use ↑/↓ to select a song. Press ENTER to play.",
         values=choices,
         default_value=default_value,
@@ -147,7 +148,7 @@ def main(
     sheets_dir: str = "sheets",
     *,
     default_print_mode: str = "cumulative",
-    print_last_n: int = 24,
+    print_last_n: int = 64,
     panic_hotcorner: bool = True,
 ) -> None:
     console = Console()
